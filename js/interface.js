@@ -1,6 +1,6 @@
 /* feuille (dictionnaire, rappels) */
-let lastF,SHC=null;function sheet(title,html,cls=''){const s=$('#sheet');lastF=document.activeElement;s.innerHTML=`<div class="sh ${cls}" role="dialog" aria-modal="true" aria-label="${esc(title)}"><button class="rb x" id="sx" aria-label="Fermer">${ic('x')}</button>${html}</div>`;s.hidden=false;$('#sx').focus();$('#sx').onclick=closeSheet}
-function closeSheet(){if(SHU){URL.revokeObjectURL(SHU);SHU=null}$('#sheet').hidden=true;$('#sheet').innerHTML='';if('speechSynthesis' in window)speechSynthesis.cancel();if(lastF&&lastF.focus&&document.contains(lastF)&&lastF.id!=='ans')lastF.focus({preventScroll:true})
+let lastF,SHC=null;function sheet(title,html,cls=''){const s=$('#sheet');lastF=document.activeElement;s.innerHTML=`<div class="sh ${cls}" role="dialog" aria-modal="true" aria-label="${esc(title)}"><button class="rb x" id="sx" aria-label="Fermer">${ic('x')}</button>${html}</div>`;s.hidden=false;sfx.open();$('#sx').focus();$('#sx').onclick=closeSheet}
+function closeSheet(){sheetGhost();if(SHU){URL.revokeObjectURL(SHU);SHU=null}$('#sheet').hidden=true;$('#sheet').innerHTML='';if('speechSynthesis' in window)speechSynthesis.cancel();if(lastF&&lastF.focus&&document.contains(lastF)&&lastF.id!=='ans')lastF.focus({preventScroll:true})
  const f=SHC;SHC=null;if(f)f()}
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#sheet').hidden)closeSheet();
