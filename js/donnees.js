@@ -1,18 +1,18 @@
 const D=GAME_DATA.filter(l=>l.steps.length),$=s=>document.querySelector(s),KEY='conjuguonseco.v1';
 const SITE='https://monsieurbeline.github.io/ConjuguonsEco-AFJ/';
-const UNLOCK_ALL=false,RULE_AFTER_3=true,MAX=3,HINT_COST=3,QTIME=15,FREEZE_COST=20,FREEZE_MAX=2;
+const UNLOCK_ALL=false,RULE_AFTER_3=true,MAX=3,HINT_COST=2,QTIME=15,FREEZE_COST=20,FREEZE_MAX=2;
 const COL={A1:['#3a9d1f','#a6e05a','castle'],A2:['#0e9f8e','#7ee3d3','leaf'],B1:['#2b8fd6','#8fd3f7','wave'],B2:['#8a5a2b','#e0b878','tree']};
 D.forEach(l=>{[l.c1,l.c2,l.icon]=COL[l.id]});
-const CATI=['info','leaf','paw','earth'],CAT=['Informations générales','Flore','Faune','Éco-citoyenneté'];
+const CATI=['info','paw','leaf','earth'],CAT=['Informations générales','Faune','Flore','Éco-citoyenneté'];
 const RANKS=['Graine','Pousse','Têtard','Rainette','Gardien·ne de la forêt','Sentinelle','Maître·sse des verbes'];
-const BADGES={first:['paw','Premier pas'],perfect:['star','Sans faute'],combo5:['flame','Combo x5'],streak3:['cal','3 jours de suite'],daily:['cal','Défi du jour'],quiz:['bolt','Verbes éclair'],lettres:['leaf','Chasseur de mots'],review:['book','Réviseur'],A1:['castle','Parcours A1'],A2:['leaf','Parcours A2'],B1:['wave','Parcours B1'],B2:['tree','Parcours B2'],share:['share','Ambassadeur'],album:['book','Album complet']};
+const BADGES={first:['paw','Premier pas'],perfect:['star','Sans faute'],combo5:['flame','Combo x5'],streak3:['cal','3 jours de suite'],daily:['cal','Défi du jour'],quiz:['bolt','Verbes éclair'],lettres:['leaf','Chasseur de mots'],review:['book','Réviseur'],A1:['castle','Parcours A1'],A2:['leaf','Parcours A2'],B1:['wave','Parcours B1'],B2:['tree','Parcours B2'],share:['share','Ambassadeur'],album:['book','Album complet'],compose:['book','Temps composés'],maitre:['star','10 verbes maîtrisés']};
 const ROLES={tinet:{n:'Ti-Nèt',side:'l',col:'#43a51c',ic:'paw',img:'img/tinet-tete.webp'},sole:{n:'Grand-père Solé',side:'r',col:'#8a5a2b',ic:'paw',img:'img/char-sole.png'},explorateur:{n:'L’explorateur',side:'l',col:'#0e9f8e',ic:'user',img:'img/char-explorateur.png'},sargasse:{n:'Sargassum Fluitan',side:'r',col:'#b8860b',ic:'leaf',img:'img/char-sargasse.png'}};
 const FX={'A1-1':{0:'tinet'},
-'A2-2':{0:'explorateur',1:'explorateur',2:'explorateur',4:'explorateur',5:'explorateur',6:'explorateur',7:'explorateur',8:'explorateur',9:'explorateur',10:'explorateur',12:'info'},
-'A2-3':{0:'info',1:'tinet',2:'sole',3:'tinet',4:'sole',5:'sole',6:'sole',7:'sole',8:'sole',9:'tinet',10:'tinet',11:'sole',12:'sole',13:'sole',14:'sole',15:'sole',16:'info'},
-'B1-2':{0:'sargasse',1:'sargasse',2:'sargasse',3:'sargasse',4:'info',5:'info',6:'info'},
+'A2-3':{0:'explorateur',1:'explorateur',2:'explorateur',4:'explorateur',5:'explorateur',6:'explorateur',7:'explorateur',8:'explorateur',9:'explorateur',10:'explorateur',12:'info'},
+'A2-2':{0:'info',1:'tinet',2:'sole',3:'tinet',4:'sole',5:'sole',6:'sole',7:'sole',8:'sole',9:'tinet',10:'tinet',11:'sole',12:'sole',13:'sole',14:'sole',15:'sole',16:'info'},
+'B1-3':{0:'sargasse',1:'sargasse',2:'sargasse',3:'sargasse',4:'info',5:'info',6:'info'},
 'B1-4':{1:'info',2:'info',4:'info'},
-'B2-3':{0:'fiche',1:'narr',2:'cri',3:'tinet',4:'cri',5:'tinet',6:'info',7:'info'}};
+'B2-2':{0:'fiche',1:'narr',2:'cri',3:'tinet',4:'cri',5:'tinet',6:'info',7:'info'}};
 const TIPS=['Haïti compte plus de 256 espèces d’oiseaux, dont 31 qu’on ne trouve qu’en Haïti et à Saint-Domingue.','Plus de 201 arbres sont endémiques d’Haïti : ils ne poussent nulle part ailleurs !','Le Parc National Historique – Citadelle, Sans Souci, Ramiers est au patrimoine mondial de l’UNESCO depuis 1982.','Le zagouti et le solénodon sont les deux mammifères terrestres endémiques d’Haïti.','La Forêt des Pins, au parc La Visite, couvre environ 14 000 ha : c’est la plus grande réserve de pins d’Haïti.','Konbit Plastik Haïti a collecté plus de 105 millions de bouteilles plastique en 5 ans.','Une plante endémique pousse seulement sur un territoire bien délimité.','Le pétrel diablotin est en danger d’extinction : il resterait moins de 2 000 individus dans le monde.'];
 /* dictionnaire : [formes (regex), mot, définition] */
 const GL=[
