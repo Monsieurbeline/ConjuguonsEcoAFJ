@@ -1,10 +1,17 @@
 /* état et réglages */
-const DEF={music:true,sfx:true,fsc:true,fs:1,dys:false,hc:false,rm:false,nt:false,vox:false};
-let S={done:{},photo:null,name:'',xp:0,coins:0,streak:0,last:'',badges:[],daily:{},days:{},td:null,verbs:0,err:{},qbest:0,sr:{},freeze:0,set:{}};
+const DEF={music:true,sfx:true,fsc:true,fs:1,dys:false,hc:false,rm:!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches),nt:false,vox:true,qb:false,lite:!!((navigator.deviceMemory&&navigator.deviceMemory<=2)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=2))};
+let S={done:{},photo:null,name:'',xp:0,coins:0,streak:0,last:'',badges:[],daily:{},days:{},td:null,verbs:0,err:{},qbest:0,sr:{},freeze:0,set:{},vs:{},kinds:{}};
 try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
 S.set=Object.assign({},DEF,S.set);if(S.mute){S.set.sfx=S.set.music=false;delete S.mute}S.err=S.err||{};S.sr=S.sr||{};S.freeze=S.freeze||0;
+/* v25 : ordre des étapes du canevas (général, faune, flore, éco-citoyenneté) : on échange les anciennes étapes 2 et 3 */
+function migrateOrder(){if((S.ver||0)>=25)return;const sw=k=>k=='1'?'2':k=='2'?'1':k,fix=(o,fn)=>{const n={};for(const key in(o||{}))n[fn(key)]=o[key];return n},
+ f2=k=>k.replace(/^([AB][12])-(\d)$/,(_,a,b)=>a+'-'+sw(b)),f3=k=>k.replace(/^([AB][12])-(\d)-(\d+)$/,(_,a,b,c)=>a+'-'+sw(b)+'-'+c);
+ S.done=fix(S.done,f2);S.err=fix(S.err,f3);S.sr=fix(S.sr,f3);S.vs=fix(S.vs,f3);
+ if(S.ck){S.ck.k=+sw(String(S.ck.k));S.ck.key=S.ck.key.replace(/-(\d)$/,(_,b)=>'-'+({2:3,3:2}[b]||b))}
+ S.ver=25}
+migrateOrder();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
-function applySet(){const r=document.documentElement,t=S.set;r.style.setProperty('--fs',[.92,1,1.22][t.fs]);r.classList.toggle('dys',t.dys);r.classList.toggle('hc',t.hc);r.classList.toggle('rm',t.rm)}
+function applySet(){const r=document.documentElement,t=S.set;r.style.setProperty('--fs',[.92,1,1.22][t.fs]);r.classList.toggle('dys',t.dys);r.classList.toggle('hc',t.hc);r.classList.toggle('rm',t.rm);r.classList.toggle('lite',!!t.lite)}
 const ic=(n,c='')=>`<svg class="ic ${c}" aria-hidden="true" focusable="false"><use href="#i-${n}"/></svg>`;
 const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const norm=t=>t.toLowerCase().replace(/[’‘`´]/g,"'").replace(/\s+/g,' ').replace(/[.!,;:]+$/,'').trim();
@@ -38,10 +45,10 @@ const Amb={on:false,T:[],start(){if(!S.set.music||this.on)return;if(AU.ok){this.
  stop(){if(!this.on)return;this.on=false;if(this.file){this.file=false;AU.pause();return}this.T.forEach(t=>{clearInterval(t);clearTimeout(t)});this.T=[];const c=AC,m=this.m,n=this.n,p=this.pad;try{m.gain.cancelScheduledValues(c.currentTime);m.gain.linearRampToValueAtTime(0,c.currentTime+.4);setTimeout(()=>{try{n.stop();p.forEach(o=>o.stop());m.disconnect()}catch(e){}},500)}catch(e){}}};
 document.addEventListener('visibilitychange',()=>{if(document.hidden)Amb.stop();else if(S.set.music&&started)Amb.start()});
 let started=false;const unlockAudio=()=>{if(started)return;started=true;ac();Amb.start()};['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio));
-function speak(t){if(!('speechSynthesis' in window)){toast('La lecture audio n’est pas disponible sur cet appareil.');return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='fr-FR';u.rate=.9;speechSynthesis.speak(u)}
+function speak(t){if(!('speechSynthesis' in window)){toast('La lecture audio n’est pas disponible sur cet appareil.');return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='fr-FR';u.rate=.9;u.onstart=()=>setSpeaking(true);u.onend=u.onerror=()=>setSpeaking(false);speechSynthesis.speak(u)}
 function burst(n=26){if(S.set.rm)return;const C=['#43a51c','#a6e05a','#f47b20','#ffc928','#5bb8e6'];for(let i=0;i<n;i++){const e=document.createElement('i');e.className='cf';e.setAttribute('aria-hidden','true');e.innerHTML=ic(i%3?'leaf':'star');e.style.cssText=`left:${innerWidth/2}px;top:${innerHeight*.55}px;color:${C[i%5]};--dx:${(Math.random()-.5)*340}px;--dy:${-90-Math.random()*240}px`;document.body.appendChild(e);setTimeout(()=>e.remove(),1200)}}
 let tt;function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2800)}
-function award(id){if(S.badges.includes(id))return;S.badges.push(id);save();setTimeout(()=>{toast(ic(BADGES[id][0])+' Badge : '+BADGES[id][1]);sfx.win()},600)}
+function award(id){if(S.badges.includes(id))return;S.badges.push(id);save();if(document.body.classList.contains('ingame')){BQ.push(id);setTimeout(()=>{toast(ic(BADGES[id][0])+' Badge : '+BADGES[id][1]);sfx.pop()},600)}else setTimeout(()=>celebrate(badgeCel(id)),600)}
 function touchStreak(){const t=today();S.days=S.days||{};S.days[t]=1;if(S.last===t)return;const d=S.last?dayDiff(S.last,t):9;
  if(d==1)S.streak++;else if(d==2&&S.freeze>0){S.freeze--;S.streak++;setTimeout(()=>toast(ic('flame')+' Ton gel de série a sauvé ta série !'),900)}else S.streak=1;
  S.last=t;if(S.streak>=3)award('streak3')}
