@@ -5,8 +5,8 @@ let nav=[],Q=null;
 const BGM={level:'map',intro:'map',home:'map',welcome:'map',dailyScreen:'dawn',train:'forest',quizRun:'forest',quizEnd:'forest',carnet:'forest',reader:'forest',prof:'camp',play:'calm',splash:'map'};
 function setBg(n,a){let lv=D[S.start||0].id;if(n=='level'||n=='intro'||n=='reader')lv=D[a[0]].id;else if(n=='home'){const nx=nextStep();lv=D[nx?nx[0]:0].id}else if(n=='play'&&a[0]&&a[0].mode=='step')lv=D[a[0].i].id;
  const st=n=='intro'||n=='reader'?[a[0],a[1]]:n=='play'&&a[0]&&a[0].mode=='step'?[a[0].i,a[0].k]:null;
- $('#bgl').className='bgl '+(st?'step s'+st[1]:BGM[n]||'map')+' '+lv;stepBg(st)}
-/* fond d'écran propre à chaque étape : img/A1-1.jpg … B2-4.jpg (ou .webp). Sans image : décor provisoire (classes .step.s0 à .s3) */
+ $('#bgl').className='bgl '+(st?'step s'+[0,2,1,3][st[1]]:BGM[n]||'map')+' '+lv;stepBg(st)}
+/* fond d'écran propre à chaque étape : img/A1-1.jpg … B2-4.jpg (ou .webp) ; ordre : 1 général, 2 faune, 3 flore, 4 éco-citoyenneté. Sans image : décor provisoire (classes .step.s0 à .s3) */
 const SBG={tok:0,cache:{},cur:null},stepKey=(i,k)=>D[i].id+'-'+(k+1);
 function findImg(key){if(SBG.cache[key]!==undefined)return Promise.resolve(SBG.cache[key]);
  return new Promise(res=>{const t=[`img/${key}.jpg`,`img/${key}.webp`],next=()=>{const u=t.shift();if(!u){SBG.cache[key]=null;return res(null)}const im=new Image();im.onload=()=>{SBG.cache[key]=u;res(u)};im.onerror=next;im.src=u};next()})}
@@ -23,7 +23,7 @@ function stepBg(st){const t=++SBG.tok,box=$('#sbg'),b=document.body;
 const TOP=['home','dailyScreen','train','prof'],NOTABS=['play','splash','quizRun','lettresRun','welcome'];
 const jouer=()=>{const nx=nextStep();show(level,nx?nx[0]:D.length-1)};
 function show(fn,...a){nav.push([fn,a]);run()}
-function run(){const[fn,a]=nav[nav.length-1];if(Q)clearTimeout(Q.t);if(LW){clearTimeout(LW.t);LW.on=false}if('speechSynthesis' in window)speechSynthesis.cancel();$('#bar').hidden=true;$('#hd').hidden=false;chips();window.scrollTo(0,0);document.body.dataset.bg={level:'map',intro:'map',dailyScreen:'daily',train:'train',carnet:'train',lettresRun:'train',lettresEnd:'train',prof:'prof'}[fn.name]||'none';const wd=['home','level','train'].includes(fn.name);$('#main').className=wd?'wide':'';$('#app').className=wd?'w':'';fn(...a);
+function run(){const[fn,a]=nav[nav.length-1];ghostOut();if(Q)clearTimeout(Q.t);if(LW){clearTimeout(LW.t);LW.on=false}if('speechSynthesis' in window)speechSynthesis.cancel();$('#bar').hidden=true;$('#hd').hidden=false;chips();window.scrollTo(0,0);document.body.dataset.bg={level:'map',intro:'map',dailyScreen:'daily',train:'train',carnet:'train',lettresRun:'train',lettresEnd:'train',prof:'prof'}[fn.name]||'none';const wd=['home','level','train'].includes(fn.name);$('#main').className=wd?'wide':'';$('#app').className=wd?'w':'';fn(...a);hideBub();if(fn.name==='level')fxLevel(a[0]);if(fn.name==='carnet')fxCarnet();fxScroll(fn);document.body.classList.toggle('ingame',fn.name==='play');{const m=$('#main');m.classList.remove('pgin');void m.offsetWidth;m.classList.add('pgin');clearTimeout(run.pt);run.pt=setTimeout(()=>m.classList.remove('pgin'),800)}
  const t={home:'menu',level:'home',intro:'home',dailyScreen:'daily',train:'train',quizRun:'train',quizEnd:'train',lettresRun:'train',lettresEnd:'train',carnet:'train',reader:'train',prof:'prof'}[fn.name];const big=matchMedia('(min-width:900px)').matches;$('#tabs').hidden=['splash','welcome'].includes(fn.name)||(!big&&NOTABS.includes(fn.name));document.body.classList.toggle('side',!$('#tabs').hidden);
  setBg(fn.name,a);document.querySelectorAll('#tabs button').forEach(b=>{const on=b.dataset.t===t;b.classList.toggle('on',on);on?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});
  $('#back').hidden=nav.length<2||TOP.includes(fn.name);if(!NOTABS.includes(fn.name))$('#main').focus({preventScroll:true})}
